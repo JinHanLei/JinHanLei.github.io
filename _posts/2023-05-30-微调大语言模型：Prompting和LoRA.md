@@ -116,7 +116,7 @@ peft_config = PromptTuningConfig(
 
 ### 加载和处理数据
 
-数据为csv，格式如下：
+数据为csv文件，格式如下，可以将自己的数据处理成类似格式进行微调～
 
 |               Tweet text               |    Label     |  ID  |
 | :------------------------------------: | :----------: | :--: |
@@ -289,4 +289,4 @@ with torch.no_grad():
     print(tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True))
 ```
 
-更多训练细节可以参考往期博客。
+更多微调案例可以参考[PEFT官方教程](https://huggingface.co/docs/peft/package_reference/tuners)，以及万能的[GitHub](https://github.com/)，更多训练细节可以参考往期博客～
