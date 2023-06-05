@@ -3,7 +3,7 @@ title: Attention is all I need：Transformer的原理和代码详解
 
 date: 2023-05-29 17:00:00 +0800
 
-categories: [Deep Learning, Theory]
+categories: [Deep Learning, Transformers]
 
 tags: [deep learning, transformers, attention]
 
@@ -17,7 +17,7 @@ math: true
 > Transformer可运行的代码发布在[GitHub](https://github.com/JinHanLei/Transformers_tutorial)
 {: .prompt-tip }
 
-提到ChatGPT的原理，就绕不开Transformer，Transformer中的核心思想之一便是**Attention**，Attention机制彻底击败了在此之前的绝对王者RNN模式，并统治各大NLP任务直到现在。正因如此，Transformer的论文不叫Transformer，而是叫做[《Attention is all you need》](https://arxiv.org/abs/1706.03762)，强烈建议看看原文，常读常新。本文是以我的理解，阐述Transformer是怎么想出来的，为什么这么设计。
+提到ChatGPT的原理，就绕不开Transformer，Transformer中的核心思想之一便是**Attention**，Attention机制彻底击败了在此之前的绝对王者RNN模式，并统治各大NLP任务直到现在。正因如此，Transformer的论文不叫Transformer，而是叫做[《Attention is all you need》](https://arxiv.org/abs/1706.03762)。本文是以我的理解，阐述Transformer是怎么想出来的，为什么这么设计。
 
 ## Attention的思想
 
@@ -75,7 +75,7 @@ QK = torch.mm(emb, emb.T) / torch.sqrt(torch.FloatTensor([10]))
 print(QK)
 ```
 
-由于nn.Embedding随机初始化，所以你的结果会跟我不一样没关系，结果表述如下：
+由于nn.Embedding随机初始化，所以结果会不一样，我的结果表述如下：
 
 
 $$
@@ -99,7 +99,7 @@ sim(Q,K)=
 $$
 
 
-这个矩阵对角线都是自己跟自己的相似度，比如3.2897就表示“青”和“青”的相似度，就很大。这样就得到了句子中每个字的权重。由于点积可以产生任意大的数字，这会破坏训练过程的稳定性，因此需要 $$Softmax$$。Attention的公式表示为：
+矩阵对角线表示自身的相似度，比如3.2897就表示“青”和“青”的相似度，就很大。每行代表每个字的权重。由于点积可以产生任意大的数字，这会破坏训练过程的稳定性，因此需要 $$Softmax$$。Attention的公式表示为：
 
 
 $$
@@ -164,7 +164,7 @@ class MultiHeadAttention(nn.Module):
         return x
 ```
 
-Transformer最核心的就是上文所述的Attention，下面介绍其他部分。
+更多时候，为了并行效率，多头操作是先乘上$$\boldsymbol{W}\in\mathbb{R}^{d_{model}\times d_{model}}$$的权重矩阵，再将QKV切块相乘，同一个结果但是抛弃了`for`循环，[我的仓库](https://github.com/JinHanLei/Transformers_tutorial)中就是这种做法。Transformer最核心的就是上文所述的Attention，下面介绍其他部分。
 
 ## Encoder-Decoder
 
@@ -246,7 +246,7 @@ ReLU的导数只有0和1，使得计算成本很低。
 
 Add & Norm由Add和Norm两部分组成。
 
-Add是将箭头指过来的两者相加，包括Attention和原embedding这两个矩阵相加、以及过了FFN和没过之前的矩阵相加，这个很简单，就不细说了
+Add是将箭头指过来的两者相加，包括Attention和原embedding这两个矩阵相加、以及过了FFN和没过之前的矩阵相加，这个很简单，就不细说了。
 
 Norm指标准化，Transformer中使用[LayerNorm](https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html)，在图像领域常使用BatchNorm，两者都是拿均值方差做标准化处理，都是下式：
 

@@ -55,6 +55,51 @@ conda env remove -n <env_name>
 
 并且环境可以在Pycharm中引入使用，进入Pycharm点击<kbd>Edit</kbd>-<kbd>Settings</kbd>-<kbd>Python Interpreter</kbd>-<kbd>Add Interpreter</kbd>-<kbd>Conda Environment</kbd>，会帮你自动找到conda和虚拟环境，添加即可。
 
+### 更换conda和pip源
+
+国内访问conda和pip可能会比较慢，装包很不方便，我们先更换成清华源。
+
+清华镜像站都提供了教程：
+
+- [conda更换源](https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/)：其中提到的`.condarc`在C盘-用户-<用户名>文件夹中
+- [pip更换源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)：`设为默认`中的两行命令就搞定
+
+### Jupyter Notebook添加虚拟环境
+
+Jupyter Notebook是以网页的形式打开，可以在网页页面中直接编写代码和运行代码，代码的运行结果也会直接在代码块下显示的程序，主打一个方便。
+
+Anaconda默认是装好jupyter的，只需运行：
+
+```shell
+jupyter notebook
+```
+
+但是当Anaconda的虚拟环境创建完成，在jupyter上是没有的。需要手动添加，在虚拟环境中执行命令：
+
+```shell
+pip install --user ipykernel
+python -m ipykernel install --user --name=<env_name>
+```
+
+这样在新建`.ipynb`文件或者在打开的`.ipynb`文件右上角，就可以选择虚拟环境了。删除虚拟环境只需：
+
+```shell
+# 查看当前jupyter环境列表
+jupyter kernelspec list
+# 删除
+jupyter kernelspec uninstall <env_name>
+```
+
+想要在后台启动jupyter，不想要命令行窗口一直开着，可执行：
+
+```shell
+nohup jupyter notebook --allow-root > jupyter.log 2>&1 &
+# 查看
+ps -aux | grep jupyter
+```
+
+在计算机开启时会一直在后台运行，适合服务器上用，关闭计算机或者重启之后就需要再次执行了喔。
+
 ## 安装NVIDIA驱动和CUDA
 
 NVIDIA显卡是做深度学习的基础设施。有NVIDIA驱动才能调度显卡，有CUDA才能在显卡上做深度学习。
