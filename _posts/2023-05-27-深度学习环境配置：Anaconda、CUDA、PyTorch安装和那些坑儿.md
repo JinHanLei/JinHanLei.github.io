@@ -90,16 +90,6 @@ jupyter kernelspec list
 jupyter kernelspec uninstall <env_name>
 ```
 
-想要在后台启动jupyter，不想要命令行窗口一直开着，可执行：
-
-```shell
-nohup jupyter notebook --allow-root > jupyter.log 2>&1 &
-# 查看
-ps -aux | grep jupyter
-```
-
-在计算机开启时会一直在后台运行，适合服务器上用，关闭计算机或者重启之后就需要再次执行了喔。
-
 ## 安装NVIDIA驱动和CUDA
 
 NVIDIA显卡是做深度学习的基础设施。有NVIDIA驱动才能调度显卡，有CUDA才能在显卡上做深度学习。
