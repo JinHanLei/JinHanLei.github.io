@@ -61,8 +61,8 @@ conda env remove -n <env_name>
 
 清华镜像站都提供了教程：
 
-- [conda更换源](https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/)：其中提到的`.condarc`在C盘-用户-<用户名>文件夹中
-- [pip更换源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)：`设为默认`中的两行命令就搞定
+- [conda更换源](https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/)：其中提到的`.condarc`在C盘-用户-`用户名`文件夹中
+- [pip更换源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)：`设为默认`节中的两行命令就搞定
 
 ### Jupyter Notebook添加虚拟环境
 
@@ -89,6 +89,16 @@ jupyter kernelspec list
 # 删除
 jupyter kernelspec uninstall <env_name>
 ```
+
+想要在后台启动jupyter，不想要命令行窗口一直开着，可执行：
+
+```shell
+nohup jupyter notebook --allow-root > jupyter.log 2>&1 &
+# 查看
+ps -aux | grep jupyter
+```
+
+在计算机开启时会一直在后台运行，适合服务器上用，关闭计算机或者重启之后就需要再次执行了喔。
 
 ## 安装NVIDIA驱动和CUDA
 
