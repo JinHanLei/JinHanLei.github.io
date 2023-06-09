@@ -3,9 +3,9 @@ title: 微调大语言模型：Prompting和LoRA
 
 date: 2023-05-29 17:00:00 +0800
 
-categories: [Deep Learning, LLM]
+categories: [Deep Learning, Transformers]
 
-tags: [deep learning, llm]
+tags: [deep learning, transformers]
 
 comments: false
 
@@ -56,7 +56,7 @@ math: true
 
 Prompting的方法分为hard prompts和soft prompts：
 
-- Hard prompts指人工设计提示模板输入，也就是上文提到的输入提示词的方法，但是这种方法需要花费大量人力去设计提示词模板。
+- Hard prompts指人工设计提示模板输入，也就是上文提到的输入提示词的方法，但是这种方法需要花费大量人力去设计提示词模板；
 - Soft prompts指把提示设计成可学习的张量，可以根据数据更新自己，但这个张量是不可读的，因为没有对应到具体的token。
 
 Hard prompts是离散的一个个词，而soft prompts本质上是连续的，能够达到最优化，实验普遍证明soft的效果更好。下面的prompting方法都是soft prompts：

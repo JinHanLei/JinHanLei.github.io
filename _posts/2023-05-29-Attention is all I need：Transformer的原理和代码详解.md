@@ -77,7 +77,6 @@ print(QK)
 
 由于nn.Embedding随机初始化，所以结果会不一样，我的结果表述如下：
 
-
 $$
 sim(Q,K)=
 \begin{bmatrix}
@@ -98,14 +97,11 @@ sim(Q,K)=
 \end{bmatrix}
 $$
 
-
 矩阵对角线表示自身的相似度，比如3.2897就表示“青”和“青”的相似度，就很大。每行代表每个字的权重。由于点积可以产生任意大的数字，这会破坏训练过程的稳定性，因此需要 $$Softmax$$。Attention的公式表示为：
-
 
 $$
 \text{Attention}(Q, K, V) = \text{Softmax} \big( \frac{QK^T}{\sqrt{d_k}} \big)V
 $$
-
 
 代码只须再加上：
 
@@ -119,11 +115,9 @@ Attention = torch.mm(torch.softmax(QK, dim=-1), emb)
 
 为了关注到更多信息，Transformer采用Multi-head Attention机制，也就是重复n次Attention操作然后拼接，得到和原来的Attention维度相同的MultiHead，公式为：
 
-
 $$
 \begin{gather}head_i = \text{Attention}(\boldsymbol{Q}\boldsymbol{W}_i^Q,\boldsymbol{K}\boldsymbol{W}_i^K,\boldsymbol{V}\boldsymbol{W}_i^V)\\\text{MultiHead}(\boldsymbol{Q},\boldsymbol{K},\boldsymbol{V}) = \text{Concat}(head_1,...,head_h)\boldsymbol{W}^O\end{gather}
 $$
-
 
 其中 $$\boldsymbol{W}_i^Q\in\mathbb{R}^{d_{model}\times d_k}, \boldsymbol{W}_i^K\in\mathbb{R}^{d_{model}\times d_k}, \boldsymbol{W}_i^V\in\mathbb{R}^{d_{model}\times d_v},\boldsymbol{W}^O\in\mathbb{R}^{hd_{v}\times d_{model}}$$ 。
 
@@ -189,44 +183,156 @@ Multi-head Attention已经在上文介绍了，介绍下其他几位。
 
 ### Positional Encoding
 
-在Attention中其实可以看出，并没有任何有关位置的特征，这样”一步两步三步四步望着天“的每一个”步“向量都是一样的，这显然不合理。因为每一步情绪都是递进的，而Attention无法解决前后顺序和句子内的一词多义。
+在Attention中其实可以看出，并没有任何有关位置的特征，这样”一步两步三步四步望着天“的每一个”步“向量都是一样的，甚至把这句话变成”天着望步四步三步两步”一“，都是一样的，这显然不合理。因为每一步情绪都是递进的，而Attention无法解决前后顺序和句子内的一词多义。
 
 RNN通过记忆使得每一步不一样，而Transformer采用了*Positional Encoding*，即位置编码，其公式如下：
 
-
 $$
-PE_{(pos,2i)}=sin(pos/10000^{2i/d_{model}}) \\
+\begin{gather}
+PE_{(pos,2i)}=sin(pos/10000^{2i/d_{model}})\\
 PE_{(pos,2i+1)}=cos(pos/10000^{2i/d_{model}})
+\end{gather}
 $$
-
 
 意思就是向量的偶数位置填$$sin$$，奇数位置填$$cos$$，$$pos$$指相对位置，如”青花瓷“的”青“的$$pos$$就是0。对”青花瓷“这三个10维的向量进行位置编码，简单实现代码如下：
 
 ```python
 import math
+import torch
 
 seq_len = 3
 d_model = 10
 pe = torch.zeros(seq_len, d_model)
 position = torch.arange(0, seq_len).unsqueeze(1)
 div_term = torch.exp(torch.arange(0, d_model, 2) *
-                     -(math.log(10000.0) / d_model))
+                     -math.log(10000.0) / d_model)
 pe[:, 0::2] = torch.sin(position * div_term)
 pe[:, 1::2] = torch.cos(position * div_term)
 print(pe)
 ```
 
-得到的PE矩阵用来加上原始的词向量。现在很少能看到直接使用这种形式的位置编码，原因不详。更多位置编码方式，可以参考苏神的博客[《让研究人员绞尽脑汁的Transformer位置编码》](https://kexue.fm/archives/8130)。
+由于次方比较难算，利用$e^{lnx}=x$的性质，代码中进行了如下转换：
+
+$$
+\frac{1}{10000^{2i/d_{model}}}
+=e^{ln\frac{1}{10000^{2i/d_{model}}}}
+=e^{-\frac{2i}{d}ln10000}
+$$
+
+得到的PE矩阵用来加上原始的词向量。位置编码相当于根据位置给权重。为什么这么做？我们从0开始思考，让我设计位置编码，怎么设计？
+
+$$
+一步两步三步四步望着天:[0,1,2,3,4,5,6,7,8,9,10]
+$$
+
+问题在哪？跟embedding向量的数字相比，这个数字太大了，那归一化一下：
+
+$$
+一步两步三步四步望着天:[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+$$
+
+这样的问题在于无法体现位置关系，$0.1 \times 1=0.2 \times 0.5$，不同距离的值居然一样，而相同距离的值居然不一样。大概有头绪了，位置编码起码需要满足这些条件：
+
+1. 相同距离的值一样；
+2. 不同距离的值不一样；
+3. 数量不限：序列无论多长都能找到相应的位置编码表示；
+
+Transformer本身是加入额外的位置，词向量加上位置的**绝对位置编码**。另外，还有修改Attention结构的**相对位置编码**。而下面介绍苏神的[Rope](https://arxiv.org/abs/2104.09864)结合了两者。
+
+#### Rope位置编码
+
+根据Transformer的位置编码公式，$pos+k$位置的编码如下：
+
+$$
+\begin{gather}
+PE_{(pos+k,2i)}=sin((pos+k)/10000^{2i/d_{model}})\\
+PE_{(pos+k,2i+1)}=cos((pos+k)/10000^{2i/d_{model}})
+\end{gather}
+$$
+
+先令$w_i=1/10000^{2i/d_{model}}$，根据：
+
+$$
+\begin{gather}
+sin(\alpha+\beta)=sin\alpha \cdot cos\beta+cos\alpha \cdot sin\beta\\
+cos(\alpha+\beta)=cos\alpha \cdot cos\beta-sin\alpha \cdot sin\beta
+\end{gather}
+$$
+
+推导出：
+
+$$
+\begin{gather}
+PE_{(pos+k,2i)}=sin(w_i(pos+k))=sin(w_ipos) \cdot cos(w_ik)+cos(w_ipos) \cdot sin(w_ik)\\
+PE_{(pos+k,2i+1)}=cos(w_i(pos+k))=cos(w_ipos) \cdot cos(w_ik)-sin(w_ipos) \cdot sin(w_ik)
+\end{gather}
+$$
+
+就是多了$k$的部分，可以表示为矩阵：
+
+$$
+\begin{bmatrix}
+ PE_{(pos+k,2i)} \\
+ PE_{(pos+k,2i+1)}
+\end{bmatrix}
+=
+\begin{bmatrix}
+ cos(w_ik) & sin(w_ik) \\
+ -sin(w_ik) & cos(w_ik)
+\end{bmatrix}
+\times
+\begin{bmatrix}
+ PE_{(pos,2i)} \\
+ PE_{(pos,2i+1)}
+\end{bmatrix}
+$$
+
+令:
+
+$$
+R_k=
+\begin{bmatrix}
+ cos(w_ik) & sin(w_ik) \\
+ -sin(w_ik) & cos(w_ik)
+\end{bmatrix}^T
+$$
+
+根据：
+
+$$
+\begin{gather}
+-sinx=sin-x \\
+cosx=cos-x
+\end{gather}
+$$
+
+易得：
+
+$$
+R_k = R_{-k}^T
+$$
+
+并有如下性质，从而可以表示相对位置：
+
+$$
+R_{k_2-k_1}=R_{k_1}^TR_{k_2}
+$$
+
+对位置为$m$的词向量$A$和位置为$n$的$B$，对他们乘上$R_m$和$R_n$，就给Attention加上了绝对位置信息，并且具有$m-n$的相对位置信息：
+
+$$
+AR_m(BR_n)^T=AR_mR_n^TB=AR_{n-m}B
+$$
+
+Rope被许多大模型如[LLaMA](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/)、[falcon](https://huggingface.co/tiiuae/falcon-40b-instruct)等采用。以往较多模型采用直接embedding+学习的方式，但是这样最开始就定死了长度，遇到长文本只能截断，而Rope改良了这一点，使得大模型具有处理超长文本的能力。更多位置编码方式，可以参考苏神的博客[《让研究人员绞尽脑汁的Transformer位置编码》](https://kexue.fm/archives/8130)。
 
 ### Feed Forward
 
 Feed Forward简称FFN，在Encoder和Decoder的压轴处都各有一层，由两个全连接和[ReLU](https://proceedings.mlr.press/v15/glorot11a/glorot11a.pdf)激活函数组成，如下式：
 
-
 $$
 FFN(X)=max(0,xW_1+b_1)W_2+b_2
 $$
-
 
 这个$$max$$就是ReLU。各个激活函数如图：
 

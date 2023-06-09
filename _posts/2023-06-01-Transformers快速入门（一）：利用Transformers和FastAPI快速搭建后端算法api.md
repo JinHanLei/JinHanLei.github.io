@@ -16,28 +16,28 @@ description: Transformers入门，Huggingface，pipelines，FastAPI，后端算�
 
 ## 预训练模型
 
-在Transformer结构中，存在许多的$$W$$权重矩阵，训练后具有大量的信息，并且可以保存为文件。如果有大佬训练了效果特别好的模型，他能不能慷慨分享出来，给我们用？幸运的是，真的存在这样一群具有无私**开源精神**的人，为推动科技发展造福全人类而不懈努力，这便是Huggingface社区的贡献者们。
+在Transformer结构中，存在许多的$W$权重矩阵，训练后具有大量的信息，并且可以保存为文件。如果有大佬训练了效果特别好的模型，他能不能慷慨分享出来，给我们用？幸运的是，真的存在这样一群具有无私**开源精神**的人，为推动科技发展造福全人类而不懈努力，这便是Huggingface社区的贡献者们。
 
-让我们进入Huggingface的模型库[>>>点击直达](https://huggingface.co/models)一探究竟。
+让我们进入Huggingface的模型库[>点击直达](https://huggingface.co/models)一探究竟。
 
-印入眼帘的便是大量的预训练模型，包括著名的[BERT](https://huggingface.co/bert-base-uncased)、[GPT2](https://huggingface.co/gpt2)等，你常可以看到以下字眼：
+印入眼帘的便是大量的预训练模型，包括著名的[BERT](https://huggingface.co/bert-base-uncased)、[GPT2](https://huggingface.co/gpt2)等，常可以看到以下字眼：
 
-- large/base/small/tiny/mini：指模型大小
-- cased/uncased：cased指区分大小写，"Hi"和"hi"是两个不同的词；uncased指预先对文本做lower-case，"Hi"和"hi"都会转成"hi"，于是词表只有小写的单词
-- zh/fr/en...：指语言，中文/法语/英语等
-- wwm：Whole Word Masking，对全词进行Mask
+- large/base/small/tiny/mini：指模型大小；
+- cased/uncased：cased指区分大小写，"Hi"和"hi"是两个不同的词；uncased指预先对文本做lower-case，"Hi"和"hi"都会转成"hi"，于是词表只有小写的单词；
+- zh/fr/en：指语言，中文/法语/英语等；
+- wwm：Whole Word Masking，对全词进行Mask。
 
 点进[GPT2](https://huggingface.co/gpt2)看看。
 
-在模型首页有三个选项卡<kbd>Model Card</kbd>|<kbd>Files</kbd>|<kbd>Community</kbd>，作用如下：
+在模型首页有三个选项卡<kbd>Model Card</kbd><kbd>Files</kbd><kbd>Community</kbd>，作用如下：
 
-- Model Card：介绍这个模型，对应Files里的README.md。一般都会提供`How to use`，能用Transformers的几行代码把此模型跑起来。有些模型的右侧会提供`Hosted inference API`，直接在线尝试使用这个模型；底下还有`Spaces`，指使用了这些模型的空间，设计了界面，不过俩蛮多时候都不好使
-- Files：保存了模型的各个文件。点击中间的下载图标即可下载，我试了右键另存为不太行。用PyTorch必要下载：
-  1. pytorch_model.bin，模型的参数文件，最大（其他大文件基本都是针对其他类深度学习框架，如TensorFlow的tf_model.h5，不用下载）
-  2. config.json，保存模型结构、参数等信息
-  3. vocab.txt(.json)，词表文件
-  4. 其他小文件也一并下载
-- Community：提供模型的讨论区，结合了GitHub的issue和PR，对模型的问题或改进可以提在这
+- **Model Card**：介绍这个模型，对应Files里的README.md。一般都会提供**How to use**，能用Transformers的几行代码把此模型跑起来。有些模型的右侧会提供**Hosted inference API**，直接在线尝试使用这个模型；底下还有**Spaces**，指使用了这些模型的空间，设计了界面，不过俩蛮多时候都不好使。
+- **Files**：保存了模型的各个文件。点击中间的**下载图标**即可下载，我试了右键另存为不太行。用PyTorch必要下载：
+  1. `pytorch_model.bin`，模型的参数文件，最大（其他大文件基本都是针对其他类深度学习框架，如TensorFlow的tf_model.h5，不用下载）；
+  2. `config.json`，保存模型结构、参数等信息；
+  3. `vocab.txt(.json)`，词表文件；
+  4. 其他小文件不是每个模型都有，但也请一并下载，可能包括特殊分词和模型结构的`.py`文件，不可或缺。
+- **Community**：提供模型的讨论区，结合了GitHub的issue和PR，对模型的问题或改进可以提在这。
 
 ### Git LFS
 
@@ -95,9 +95,9 @@ print(result)
 
 pipeline会自动完成以下三个步骤：
 
-1. 将文本预处理为模型的输入格式
-2. 将预处理好的文本送入模型
-3. 对模型的预测值进行后处理，输出想要的结果
+1. 将文本预处理为模型的输入格式；
+2. 将预处理好的文本送入模型；
+3. 对模型的预测值进行后处理，输出想要的结果。
 
 pipeline会自动选择合适的预训练模型来完成任务。例如对于情感分析，默认就会选择微调好的英文情感模型 *distilbert-base-uncased-finetuned-sst-2-english*。
 
@@ -121,8 +121,8 @@ classifier = pipeline('text-classification', model='./bert-base-chinese')
 
 FastAPI是最快的基于 Python 的 Web 框架之一。相比于Flask，有以下特点：
 
-- FastAPI使用 Pydantic 进行数据验证
-- Uvicorn提供异步请求能力
+- FastAPI使用 Pydantic 进行数据验证；
+- Uvicorn提供异步请求能力。
 
 先安装：
 
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     uvicorn.run(app="api:app", host="127.0.0.1", port=8000, reload=True)
 ```
 
-其中api指这份代码的文件名`api.py`；host指ip"127.0.0.1"是本地的地址；port端口8000；reload是调试模式，可以在服务跑着的情况下改代码热重载，不用每次改完代码都关掉再重新跑了。
+其中api对应这份代码的文件名`api.py`；host指ip"127.0.0.1"是本地的地址；port端口8000；reload是调试模式，可以在服务跑着的情况下改代码热重载，不用每次改完代码都关掉再重新跑了。
 
 测试服务：
 
@@ -199,4 +199,4 @@ print(res)
 
 在本章中，我们初步了解了如何使用Transformers提供的pipeline来处理NLP任务，并且用FastAPI搭建了一个简单的服务。
 
-在下一章中，我们会具体介绍Models和Tokenizers的参数以及使用方式。
+在下一章中，我们会具体介绍Transformers库中的两个重要组件：模型Model和分词器Tokenizer。

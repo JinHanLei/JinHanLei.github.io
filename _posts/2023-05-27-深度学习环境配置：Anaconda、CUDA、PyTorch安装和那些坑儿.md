@@ -3,16 +3,27 @@ title: 深度学习环境配置：Anaconda、CUDA、PyTorch安装和那些坑儿
 
 date: 2023-05-27 17:00:00 +0800
 
-categories: [Deep Learning, Coding]
+categories: [Deep Learning]
 
 tags: [deep learning]
 
 comments: false
 
+mermaid: true
+
 description: Anaconda下载及安装，CUDA安装，PyTorch安装
 ---
 
-工欲善其事，必先利其器。在使用Python开展深度学习的研究之前，绕不开的一步就是环境安装。本章将介绍Python的管理工具Anaconda、NVIDIA驱动和CUDA的安装、深度学习框架PyTorch的安装和那些坑儿。
+工欲善其事，必先利其器。在使用Python开展深度学习的研究之前，绕不开的一步就是环境安装。本章将介绍Python的管理工具Anaconda、NVIDIA驱动和CUDA的安装、深度学习框架PyTorch的安装和那些坑儿。这几者的关系如下图：
+
+```mermaid
+graph LR
+A[数据] -->B(PyTorch)
+    B -->|Anaconda| C(Python)
+	C --> D(CUDA) --> E(NVIDIA驱动) --> F(显卡)
+```
+
+我们把数据交给PyTorch，Python进行代码解释，调用CUDA的深度学习工具，最后交给驱动去用显卡，而Anaconda的作用在于Python的便捷管理。环环相扣，缺一不可，让我们开始安装之旅！
 
 ## Anaconda安装和使用
 
@@ -20,13 +31,13 @@ description: Anaconda下载及安装，CUDA安装，PyTorch安装
 
 [Anaconda](https://www.anaconda.com/download/)是一个对Python包和环境进行管理的工具。主要功能有：
 
-- 帮你预装好大部分常用的Python包，如Jupyter Notebook
-- 快速创建、克隆、删除虚拟环境。当一个程序需要使用Python 2.7版本，而另一个程序需要使用Python 3.9版本，在Anaconda中只需要新建一个虚拟环境即可
+- 帮你预装好大部分常用的Python包，如Jupyter Notebook；
+- 快速创建、克隆、删除虚拟环境。当一个程序需要使用Python 2.7版本，而另一个程序需要使用Python 3.9版本，在Anaconda中只需要新建一个虚拟环境即可。
 
 Anaconda的安装十分简单，只需：
 
-1. 从[清华镜像](https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/)下载安装包。点击时间最新的，对应系统的就行。不想预装那么多包的可以装[miniconda](https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/)。如果需要装固定版本，对应版本在[这里](https://docs.anaconda.com/free/anaconda/reference/packages/oldpkglists/)
-2. 不断点击下一步。我勾选了”Add Anaconda3 to the system PATH“也没事，如果求稳的话，可以不勾选，搜下Anaconda配置环境变量
+1. 从[清华镜像](https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/)下载安装包。点击时间最新的，对应系统的就行。不想预装那么多包的可以装[miniconda](https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/)。如果需要装固定版本，对应版本在[这里](https://docs.anaconda.com/free/anaconda/reference/packages/oldpkglists/)；
+2. 不断点击下一步。我勾选了”Add Anaconda3 to the system PATH“也没事，如果求稳的话，可以不勾选，手动配置Anaconda下环境变量。
 
 这里有个坑在于：如果计算机的**用户名**是**中文，**会报各种错误，建议修改或者重装系统。如果用户名是英文或者数字，还报错，建议换个较早的版本安装，如Anaconda3-2021.04版，python版本为3.6。
 
@@ -61,8 +72,8 @@ conda env remove -n <env_name>
 
 清华镜像站都提供了教程：
 
-- [conda更换源](https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/)：其中提到的`.condarc`在C盘-用户-`用户名`文件夹中
-- [pip更换源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)：`设为默认`节中的两行命令就搞定
+- [conda更换源](https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/)：其中提到的`.condarc`在C盘-用户-`用户名`文件夹中；
+- [pip更换源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)：`设为默认`节中的两行命令就搞定。
 
 ### Jupyter Notebook添加虚拟环境
 
@@ -93,7 +104,7 @@ jupyter kernelspec uninstall <env_name>
 想要在后台启动jupyter，不想要命令行窗口一直开着，可执行：
 
 ```shell
-nohup jupyter notebook --allow-root > jupyter.log 2>&1 &
+nohup jupyter notebook --ip 0.0.0.0 --port 8012 --allow-root > jupyter.log 2>&1 &
 # 查看
 ps -aux | grep jupyter
 ```
@@ -108,10 +119,10 @@ NVIDIA显卡是做深度学习的基础设施。有NVIDIA驱动才能调度显�
 
 首先检查自己的计算机是否有N卡，有如下方案：
 
-1. 观察外机是否贴着绿油油的NVIDIA标
-2. 开始菜单查看是否预装了NVIDIA相关软件
-3. 命令行运行dxdiag，弹出窗口，查看<kbd>显示</kbd>下是否有NVIDIA设备
-4. 询问购机处
+1. 观察外机是否贴着绿油油的NVIDIA标；
+2. 开始菜单查看是否预装了NVIDIA相关软件；
+3. 命令行运行dxdiag，弹出窗口，查看<kbd>显示</kbd>下是否有NVIDIA设备；
+4. 询问购机处。
 
 是N卡但没装驱动，请前往[NVIDIA官网](https://www.nvidia.cn/Download/index.aspx?lang=cn)选择自己显卡的版本进行安装，驱动越新越好。下载后双击，只需不断下一步就安装好了。装好后在命令行工具验证：
 
