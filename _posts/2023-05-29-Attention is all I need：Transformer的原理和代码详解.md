@@ -166,7 +166,7 @@ class MultiHeadAttention(nn.Module):
 
 - **Transformer的Encoder**（如[BERT](https://arxiv.org/abs/1810.04805)），又称自编码 (auto-encoding) Transformer 模型
 - **Transformer的Decoder**（如[GPT系列](https://openai.com/blog/language-unsupervised/)），又称自回归 (auto-regressive) Transformer 模型
-- **完整的Encoder-Decoder**（例如 [BART](https://arxiv.org/pdf/1910.13461)、[T5](https://arxiv.org/pdf/1910.10683.pdf)等）
+- **完整的Encoder-Decoder**（例如[BART](https://arxiv.org/pdf/1910.13461)、[T5](https://arxiv.org/pdf/1910.10683.pdf)等）
 
 理解了Transformer，以上模型的上手难度会小很多，我们之后再了解。Transformer整体结构如图：
 
@@ -235,7 +235,7 @@ $$
 
 1. 相同距离的值一样；
 2. 不同距离的值不一样；
-3. 数量不限：序列无论多长都能找到相应的位置编码表示；
+3. 数量不限：序列无论多长都能找到相应的位置编码表示。
 
 Transformer本身是加入额外的位置，词向量加上位置的**绝对位置编码**。另外，还有修改Attention结构的**相对位置编码**。而下面介绍苏神的[Rope](https://arxiv.org/abs/2104.09864)结合了两者。
 
@@ -364,8 +364,8 @@ $$
 
 其中$$E[x]$$为均值，$$Var[x]$$为方差，$$\epsilon$$是一个很小的常数，用于避免分母为零。区别就在于两者拿来算均值方差的数不一样，如下：
 
-- LayerNorm的均值方差，是对单个样本的不同特征做操作，即每个词向量内部
-- BatchNorm是对不同样本的同一特征做操作
+- LayerNorm的均值方差，是对单个样本的不同特征做操作，即每个词向量内部；
+- BatchNorm是对不同样本的同一特征做操作。
 
 拿“青花瓷”的相似矩阵为例，手推LayerNorm：
 

@@ -1,5 +1,5 @@
 ---
-title: Transformers快速入门（一）：利用Transformers和FastAPI快速搭建后端算法api
+title: Transformers快速入门（一）：用Transformers和FastAPI快速搭建后端算法api
 
 date: 2023-06-01 17:00:00 +0800
 
