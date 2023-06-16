@@ -16,7 +16,7 @@ mermaid: true
 description: Transformers入门，Huggingface，PyTorch，Dataset，DataLoader
 ---
 
-Transformers库建立在[PyTorch](https://pytorch.org/)框架之上，需要通过PyTorch来加载和处理数据、定义优化器、定义和调整模型参数，甚至直接加载模型等等。因此，本章将介绍这些后面会用到的PyTorch类和方法。
+Transformers库建立在[PyTorch](https://pytorch.org/)框架之上，需要通过PyTorch来加载和处理数据、定义优化器、定义和调整模型参数，甚至直接加载模型等等。本章将介绍用PyTorch加载和处理数据。
 
 我一直都说，人类相比于动物的一大区别就是人类善于使用工具，所谓君子生非异也，善假于物也。而人类创造出各种工具，是为了方便我们，而不是折磨我们。会有人说PyTorch好难，但是不用PyTorch，深度学习会更难！所以，让我们快速进入PyTorch这一工具的学习吧！
 
@@ -46,7 +46,7 @@ m个 \\
 \end{array}
 $$
 
-第一维k$个框：
+第一维$k$个框：
 
 $$
 \begin{array}{}
@@ -66,31 +66,31 @@ $$
 
 值得注意的是，这个维度并不是$1 \times d_m \times d_k \times d_h$喔，因为最外面必需有个大框包起来，不然不漏了吗～
 
-我们张量的构建、处理和相互运算，是由PyTorch完成的。PyTorch提供了多种方式来创建张量，以创建一个$2 \times 3$的矩阵为例：
+PyTorch提供了多种方式来创建张量，以创建一个$2 \times 3$的矩阵为例：
 
 ```python
 import torch
 # empty作用就是初始化一块内存放着，里面数据不重要，根本不会用
-a = torch.empty(2, 3)
+t = torch.empty(2, 3)
 # 随机初始化张量，范围是[0,1)
-a = torch.rand(2, 3)
+t = torch.rand(2, 3)
 # 随机初始化张量，服从标准正态分布
-a = torch.randn(2, 3)
+t = torch.randn(2, 3)
 # 全0矩阵，其中的0是长整型，也可以换成torch.double、torch.float64
-a = torch.zeros(2, 3, dtype=torch.long)
+t = torch.zeros(2, 3, dtype=torch.long)
 # 同理有全1矩阵
-a = torch.ones(2, 3, dtype=torch.long)
+t = torch.ones(2, 3, dtype=torch.long)
 ```
 
-比较常用的是全0和全1，对判断真假很有用。也可以从一个张量创造维度相同的张量，`like`一下：
+上面比较常用的是全0和全1，对判断真假很有用。也可以从一个张量创造维度相同的张量，`like`一下：
 
 ```python
 import torch
-a = torch.empty(2, 3)
-a = torch.rand_like(a)
-a = torch.randn_like(a)
-a = torch.zeros_like(a)
-a = torch.ones_like(a)
+t = torch.empty(2, 3)
+x = torch.rand_like(a)
+x = torch.randn_like(a)
+x = torch.zeros_like(a)
+x = torch.ones_like(a)
 ```
 
 也可以通过基于已有的数组创建张量：
@@ -98,35 +98,35 @@ a = torch.ones_like(a)
 ```python
 # 从列表
 _list = [[1.0, 3.8, 2.1], [8.6, 4.0, 2.4]]
-a = torch.tensor(_list)
+t = torch.tensor(_list)
 # 从ndarray
 import numpy as np
 array = np.array([[1.0, 3.8, 2.1], [8.6, 4.0, 2.4]])
-a = torch.from_numpy(array)
+t = torch.from_numpy(array)
 ```
 
 这样创建的张量默认在*CPU*，将其调入*GPU*有如下方式：
 
 ```python
-a = torch.empty(2, 3).cuda()
-a = torch.empty(2, 3, device="cuda")
-a = torch.empty(2, 3).to("cuda")
+t = torch.empty(2, 3).cuda()
+t = torch.empty(2, 3, device="cuda")
+t = torch.empty(2, 3).to("cuda")
 ```
 
 默认是使用当前第0张卡，指定用第1张卡：
 
 ```python
-a = torch.empty(2, 3).cuda(1)
-a = torch.empty(2, 3, device="cuda:1")
-a = torch.empty(2, 3).to("cuda:1")
+t = torch.empty(2, 3).cuda(1)
+t = torch.empty(2, 3, device="cuda:1")
+t = torch.empty(2, 3).to("cuda:1")
 ```
 
 对应的可以调入*CPU*：
 
 ```python
-a = torch.empty(2, 3).cpu()
-a = torch.empty(2, 3, device="cpu")
-a = torch.empty(2, 3).to("cpu")
+t = torch.empty(2, 3).cpu()
+t = torch.empty(2, 3, device="cpu")
+t = torch.empty(2, 3).to("cpu")
 ```
 
 ### 张量运算
@@ -214,112 +214,113 @@ tensor([[ 1.,  2.,  3.,  7.,  8.,  9.],
 
 ```python
 # 取第0维第1个框里的第2位，注意第X是从0开始
-x = torch.randn(3, 4)
-x = x[1, 2]
+t = torch.randn(3, 4)
+x = t[1, 2]
 # 取第0维所有框里的第2位
-x = x[:, 2]
+x = t[:, 2]
 # 取第0维所有框里的第2、3、4位赋值为100
-x[:, 2:4] = 100
+t[:, 2:4] = 100
 ```
 
-**转换**有多种方法，如下：
+**转换**有多种操作，如下：
 
-- `view`将张量转换为新的形状，需要保证总的元素个数不变，例如：
+- `view`将张量转换为新的形状，需要保证总的元素个数不变。
 
   ```python
   # x.shape为6
-  x = torch.arange(6)
+  t = torch.arange(6)
   # 2×3
-  x = x.view(2, 3)
+  x = t.view(2, 3)
   # -1会自动计算，如下例是3×2
-  x = x.view(-1, 2)
+  x = t.view(-1, 2)
   ```
 
-- `transpose`交换张量中的两个维度，参数为相应的维度：
+- `transpose`交换张量中的两个维度，参数为相应的维度。
 
   ```python
   # 2×3的张量
-  x = torch.tensor([[1, 2, 3], [4, 5, 6]])
+  t = torch.tensor([[1, 2, 3], [4, 5, 6]])
   # 调换成3×2
-  x = x.transpose(0, 1)
+  x = t.transpose(0, 1)
   # 这就是矩阵转置，同x.t()或者x.T
   ```
 
-- `permute`可以直接设置新的维度排列方式，而`transpose`每次只能交换两个维度：
+- `permute`可以直接设置新的维度排列方式，而`transpose`每次只能交换两个维度。
 
   ```python
   # 1×2×3的张量
-  x = torch.tensor([[[1, 2, 3], [4, 5, 6]]])
+  t = torch.tensor([[[1, 2, 3], [4, 5, 6]]])
   # 换成3×1×2
-  x = x.permute(2, 0, 1)
+  x = t.permute(2, 0, 1)
   ```
 
-- `reshape`，与`view`功能几乎一致，并且能够自动处理非连续张量。区别在于进行`view`的张量必须是连续的，可以调用`.is_contiguous()`来判断张量是否连续；如果非连续，需要先通过`.contiguous()`函数将其变为连续的，但`reshape`不用这么复杂。
+- `reshape`，与`view`功能几乎一致。区别在于进行`view`的张量必须是连续的，可以调用`.is_contiguous()`来判断张量是否连续；如果非连续，需要先通过`.contiguous()`函数将其变为连续的，再`view`。但`reshape`一步到位。
 
   ```python
-  x = torch.tensor([[[1, 2, 3], [4, 5, 6]]])
-  x = x.permute(2, 0, 1)
+  t = torch.tensor([[[1, 2, 3], [4, 5, 6]]])
+  t = t.permute(2, 0, 1)
   # 这样会报错，因为x.shape是3×1×2，不连续
-  x = x.view(-1)
+  x = t.view(-1)
   # contiguous
-  x = x.contiguous()
+  x = t.contiguous()
   x = x.view(-1)
   # 直接用reshape
-  x = x.reshape(-1)
+  x = t.reshape(-1)
   ```
 
-**降维与升维**：很多时候，深度学习模型无法输入向量、矩阵，只能输入张量，所以要用`.unsqueeze()`把一二维的升维成三维以上张量，反之`.squeeze()`降维。*squeeze*就是挤压、压榨的意思，让张量变弱了，框框都压没了，很形象吧！如下：
+**降维与升维**：很多时候，深度学习模型无法输入向量、矩阵，只能输入张量，所以要用`.unsqueeze()`把一二维的升维成三维以上张量，反之`.squeeze()`降维。*squeeze*就是挤压、压榨的意思，让张量变弱了，框框都压没了，很形象吧！
 
 ```python
-x = torch.tensor([1, 2, 3, 4])
+t = torch.tensor([1, 2, 3, 4])
 # 最外面套个框框
-x = torch.unsqueeze(x, dim=0)
+x = torch.unsqueeze(t, dim=0)
 # 或者
-x = x.unsqueeze(dim=0)
+x = t.unsqueeze(dim=0)
 # 思考下dim=1是什么样子？
 # squeeze会挤掉所有为1的维度，比如3×1×2就会变成3×2
-x = x.squeeze()
+x = t.squeeze()
 ```
 
 ### 特殊函数
 
 PyTorch提供了许多内置函数，只需要点一下，方法就可以出来，例如常用的：
 
-- 包括均值`.mean()`、方差`.std()`、平方根`.sqrt()`、对数`.log()`等等常见的数学运算，以平均值为例：
+- 包括均值`.mean()`、方差`.std()`、平方根`.sqrt()`、对数`.log()`等等常见的数学运算，以平均值为例。
 
   ```python
-  x = torch.tensor([[1, 2, 3], [4, 5, 6]], dtype=torch.double)
+  t = torch.tensor([[1, 2, 3], [4, 5, 6]], dtype=torch.double)
   # 默认情况下计算所有元素的平均值
-  m = x.mean()
+  m = t.mean()
   # 拿掉最外的框框，里面第0维的框框对应位置平均，这里就是对列平均
-  m = x.mean(dim=0)
+  m = t.mean(dim=0)
   # dim=1呢？
   # torch.mean()是相同效果
-  m = torch.mean(x)
+  m = torch.mean(t)
   ```
 
 - 三角函数`.sin().cos().tan()`等。
 
-- 激活函数，一般不在这里直接用，而是用`torch.nn`里的激活函数，但也放出来吧：
+- 激活函数，一般不在这里直接用，而是用`torch.nn`里的激活函数，但也放出来吧。
 
   ```python
-  s = torch.sigmoid(a)
+  a = torch.sigmoid(t)
+  a = torch.tanh(t)
   ```
 
-- 对角线：
+- 对角线。
 
   ```python
   # 如果输入是一个向量，返回这个向量为对角线元素的2D方阵；如果是方阵，返回其对角线的1D张量
-  x = torch.randn(3)
-  d = torch.diag(x)
+  t = torch.randn(3)
+  d = torch.diag(t)
   # 如果不是方阵呢？试试看
   # 返回方阵的迹
-  x = torch.arange(1, 10).view(3, 3)
-  d = torch.trace(x)
+  t = torch.arange(1, 10).view(3, 3)
+  d = torch.trace(t)
   # 返回矩阵下三角，其他置0
-  d = torch.tril(x)
+  d = torch.tril(t)
   # 创建对角线为1,其他为0的方阵
-  x = torch.eye(3)
+  t = torch.eye(3)
   ```
 
 ### 自动微分
@@ -349,7 +350,7 @@ Pytorch提供了`Dataset`/`IterableDataset`，和`DataLoader`和用于处理数�
 3. 能快速调用其内置的方法，如分`batch`、打乱等等；
 4. 对于数据量超大的情况，能够以迭代器的方式处理。
 
-那让我们用起来吧。
+下面进行这些组件的介绍。
 
 ### Dataset
 
@@ -380,7 +381,7 @@ ds = MyDataset("stock.csv")
 
 ### IterableDataset
 
-当数据量超级大，或者访问远程服务器产生的数据，不可能一把唆到内存里，所以用`IterableDataset`迭代地访问数据集。必须重写`__iter__()`函数，用于返回一个样本迭代器。
+当数据量超级大，或者访问远程服务器产生的数据，不可能一把梭到内存里，所以用`IterableDataset`迭代地访问数据集。必须重写`__iter__()`函数，用于返回一个样本迭代器。
 
 ```python
 class MyIterableDataset(IterableDataset):
@@ -474,7 +475,7 @@ print(list(test_dataloader))
 
 - `{'example': 0, 'label': 0}, {'example': 1, 'label': 1}`
 
-变成了2个batch+tensor格式的：
+变成了2个batch和tensor格式的：
 
 - `{'example': tensor([0, 1]), 'label': tensor([0, 1])}`
 
@@ -500,4 +501,4 @@ print(list(train_dataloader))
 
 ## 小结
 
-本章我们熟悉了PyTorch的数据处理，终于搞定数据了！恭喜一下自己。下一章我们来Finetune一个BERT模型！
+本章我们熟悉了PyTorch的数据处理，终于搞定数据了！下一章我们进入模型的加载和修改。
