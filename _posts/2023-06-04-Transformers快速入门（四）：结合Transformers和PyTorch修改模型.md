@@ -161,7 +161,7 @@ print(out.shape)
 
 **`nn.Linear`**是最最常用的方法，指输入$x$，对其进行$y = xA^T + b$运算。上例中，
 
-1. 首先定义线性层的维度是$10 \times 5$；
+1. 首先声明线性层的维度是$10 \times 5$；
 2. 再处理输入，把$10$维输入变换到$5$维。
 
 另一个常用的方法是**`nn.Dropout`**，能够随机将矩阵中的一些元素置0。
@@ -192,7 +192,7 @@ print(out)
 
 以*SGD*为例，用PyTorch来实现线性函数对$sin(x)$函数的拟合。
 
-损失定义为$(\hat{y} -y)^2$，其中$\hat{y}=WX$，于是损失对$X$的导数为$gradient=2*(w*x-y)*x$。每次梯度的更新就是$W=W - lr*gradient$。
+损失定义为*MSE*，即$loss = \frac{1}{n}\sum(\hat{y} -y)^2$，其中$\hat{y}=WX$，于是忽略常数损失对$X$的导数为$gradient=(w*x-y)*x$。每次梯度的更新就是$W=W - lr*gradient$。
 
 设置超参数学习率$lr=10^{-5}$，梯度更新$10000$次。
 
@@ -204,25 +204,26 @@ def sgd(x, y, lr=1e-5, epochs=10000):
     w = torch.rand(x.shape)
     progress_bar = tqdm(range(epochs))
     for epoch in range(epochs):
-        w -= lr * 2 * (w * x - y) * x
-        loss = torch.sum(w * x - y) ** 2
-        progress_bar.set_description(f'Epoch {epoch} loss: {loss:>7f}')
+        w -= lr * (w * x - y) * x
+        loss = torch.sum(w * x - y) ** 2 / x.shape[1]
+        progress_bar.set_description(f"Epoch {epoch} loss: {loss:>7f}")
         progress_bar.update(1)
     return w
 
 x = torch.arange(20).view(2, -1)
 y = torch.sin(x)
 w = sgd(x, y)
-print(y - w * x)
+print("\n", y - w * x)
 ```
 
-可以看到$loss$不断减小，最后结果部分是$0$或者接近$0$​，意味着拟合效果还可以。继续上例，试试$lr=10^{-2}$，发现问题了吗？损失居然为$nan$了，这是**梯度爆炸**问题。因为$W$相对小，而学习率过大导致梯度很大，一直减一个超大的梯度，更新后的$W$就无穷了，损失也就无穷了。
+可以看到$loss$不断减小，最后结果部分是$0$或者接近$0$​，意味着拟合效果还可以。继续上例，试试$lr=20$，发现问题了吗？损失居然为$nan$了，这是**梯度爆炸**问题。因为$W$相对小，而学习率过大导致梯度很大，一直减一个超大的梯度，更新后的$W$就累积到无穷了，损失也就无穷了。
 
 上例是单纯的线性函数拟合三角函数，而神经网络用*全连接+激活函数*实现了更强大的拟合能力。而用神经网络拟合$sin(x)$函数，如下代码：
 
 ```python
-import torch.nn as nn
 import torch
+import torch.nn as nn
+from tqdm.auto import tqdm
 
 class ANN(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -235,7 +236,7 @@ class ANN(nn.Module):
         output = self.sigmoid(output)
         return output
 
-num_epochs = 10000
+epochs = 10000
 lr = 20
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -245,18 +246,43 @@ model = ANN(x.shape[1], y.shape[1])
 model = model.to(device)
 optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 lossfc = nn.MSELoss()
-
-for i in range(num_epochs):
+progress_bar = tqdm(range(epochs))
+for epoch in range(epochs):
     optimizer.zero_grad()
     outputs = model(x)
     loss = lossfc(outputs, y)
     loss.backward()
     optimizer.step()
+    progress_bar.set_description(f"Epoch {epoch} loss: {loss:>7f} lr: {optimizer.param_groups[0]['lr']}")
+    progress_bar.update(1)
 
-print(model(x)-y)
+print("\n", model(x)-y)
 ```
 
-可以看到$0$更多了，说明这个神经网络拟合得更好。同样的，将代码中的`optimizer`替换成*Adam、AdamW*等，都可以使用。
+可以看到$0$更多了，说明这个神经网络拟合得更好。将代码中的`optimizer`替换成*Adam、AdamW*等同理也可使用。
+
+原则上来说，梯度会越来越小，所以理想状态是学习率也跟着一起越来越小，`torch.optim`中也提供了**动态调整学习率**的方法：
+
+```python
+# 在optimizer下面定义scheduler
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.1)
+# 并在optimizer.step()后面更新
+scheduler.step()
+```
+
+`StepLR`是线性的，可以看到学习率每个`step_size`在`gamma`倍减小。但是学习率单调减小也不太对，最开始最大的话，可能会导致权重的震荡。所以学习率应该先增大、后减小，增大的过程叫做`warmup`。
+
+PyTorch没有提供`warmup`的方法，而Transformers中提供了`get_scheduler`，如下例在`warmup`$300$步后开始衰减：
+
+```python
+from transformers import get_scheduler
+lr_scheduler = get_scheduler(
+        'linear',
+        optimizer,
+        num_warmup_steps=300,
+        num_training_steps=epochs * len(x)
+    )
+```
 
 ## Transformers和PyTorch结合
 
@@ -294,4 +320,6 @@ class BertForCLS(BertPreTrainedModel):
 
 ## 小结
 
-本章我们学习了如何用Transformers加载模型，并介绍了PyTorch中的一些必要组件，最后结合Transformers和PyTorch，较为详细地修改了模型的内部结构。下一章我们将跑通Finetune一个BERT模型的全流程。
+本章我们学习了如何用Transformers加载模型，并介绍了PyTorch中的一些必要组件，最后结合Transformers和PyTorch，较为详细地修改了模型的内部结构。
+
+下一章我们将跑通Finetune一个BERT模型的全流程。
