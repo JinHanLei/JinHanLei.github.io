@@ -102,7 +102,7 @@ model.save_pretrained("./models/bert-base-cased/")
 
 vocab文件去哪了？喔，原来是由本系列的（二）介绍的Tokenizer生成了。
 
-除此之外，Transformers也针对各类任务，设计了不同的结构，叫作`AutoModelFor...`，这使得各类模型能够适配不同任务。
+除此之外，Transformers也针对各类任务，设计了不同的结构，有着统一的加载方式`AutoModelFor...`，这使得各类模型能够适配不同任务。
 
 ### AutoModelFor...
 
@@ -137,7 +137,7 @@ from transformers import AutoModelForImageClassification
 model = AutoModelForImageClassification.from_pretrained("bert-base-cased")
 ```
 
-聪明的你可能会问，上面有`BertModel`和`AutoModel`相对应，那这里有没有`BertForSequenceClassification`？答案是有的。`BertForSequenceClassification`的源代码中可以看到Transformers官方是如何将*BERT*改造成句子分类模型的，引入眼帘的除了`BertModel`，还有PyTorch的各个组件。
+聪明的你可能会问，加载模型时有`BertModel`和`AutoModel`相对应，那这里针对任务时有没有`BertForSequenceClassification`？答案是有的。`BertForSequenceClassification`的源代码中可以看到Transformers官方是如何将*BERT*改造成句子分类模型的，印入眼帘的除了`BertModel`，还有PyTorch的各个组件。
 
 ## PyTorch组件
 
@@ -145,9 +145,9 @@ model = AutoModelForImageClassification.from_pretrained("bert-base-cased")
 
 ### torch.nn
 
-`torch.nn`包里面的大部分类都是继承了父类`torch.nn.Modules`，在我们自己写一个基于PyTorch的模型时，也会这样继承，因为`Modules`定义了写模型的格式，并提供了很多实用的方法。
+`torch.nn`包里面的大部分类都是继承了父类`torch.nn.Module`，在我们自己写一个基于PyTorch的模型时，也会这样继承，因为`Module`定义了写模型的格式，并提供了很多实用的方法。
 
-`Modules`下的模型都是先声明，再使用，例如：
+继承了`Module`的模型都是先实例化，再使用。例如：
 
 ```python
 import torch
@@ -159,12 +159,14 @@ out = fc(inputs)
 print(out.shape)
 ```
 
-**`nn.Linear`**是最最常用的方法，指输入$x$，对其进行$y = xA^T + b$运算。上例中，
+你也许会有和我一样的疑惑，为什么实例化之后，不是`实例.方法()`，而是直接`实例()`？这是因为继承`Module`的类都必需重写`forward`方法，而这个方法是*callable*的，这是*Python*的特性，对于*callable*的对象，可以当作方法来使用。常见的`int()、str()、bool()`事实上都是类，但是使用起来就如同方法。
+
+**`nn.Linear`**是最最常用的，输入$x$，进行$y = xA^T + b$运算。上例中，
 
 1. 首先声明线性层的维度是$10 \times 5$；
 2. 再处理输入，把$10$维输入变换到$5$维。
 
-另一个常用的方法是**`nn.Dropout`**，能够随机将矩阵中的一些元素置0。
+另一个常用的是**`nn.Dropout`**，能够随机将矩阵中的一些元素置0。
 
 ```python
 inputs = torch.rand(5, 10)
@@ -188,11 +190,11 @@ print(out)
 
 ### torch.optim
 
-为了弥补朴素梯度下降的缺陷，出现了各种优化算法，而许多经典的优化算法都在`torch.optim`中有实现，我们常用的有*SGD、Adam、AdamW*。
+为了弥补朴素梯度下降的缺陷，出现了各种优化算法，而许多经典的优化算法都在`torch.optim`中有实现，常用的有*SGD、Adam、AdamW*。
 
-以*SGD*为例，用PyTorch来实现线性函数对$sin(x)$函数的拟合。
+以*SGD*为例，先手推用PyTorch来实现线性函数对$sin(x)$函数的拟合。
 
-损失定义为*MSE*，即$loss = \frac{1}{n}\sum(\hat{y} -y)^2$，其中$\hat{y}=WX$，于是忽略常数损失对$X$的导数为$gradient=(w*x-y)*x$。每次梯度的更新就是$W=W - lr*gradient$。
+损失定义为*MSE*，即$loss = \frac{1}{n}\sum(\hat{y} -y)^2$，其中$\hat{y}=WX$，于是忽略常数损失对$X$的导数为$gradient=(w*x-y)*x$。每次梯度的更新就是$W^{'}=W - lr*gradient$。
 
 设置超参数学习率$lr=10^{-5}$，梯度更新$10000$次。
 
