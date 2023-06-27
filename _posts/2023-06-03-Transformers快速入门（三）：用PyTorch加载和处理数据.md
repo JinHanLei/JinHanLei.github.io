@@ -497,7 +497,7 @@ train_dataloader = DataLoader(ds, batch_size=2, collate_fn=collote_fn)
 print(list(train_dataloader))
 ```
 
-`collote_fn`输入的是每个batch。遍历batch里的字典，处理成你想要的就可以了。
+`collote_fn`输入的是每个batch。遍历batch里的字典，处理成你想要的格式就可以了。
 
 ## 小结
 

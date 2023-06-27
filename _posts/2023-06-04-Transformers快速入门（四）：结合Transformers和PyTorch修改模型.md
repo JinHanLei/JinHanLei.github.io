@@ -194,7 +194,23 @@ print(out)
 
 以*SGD*为例，先手推用PyTorch来实现线性函数对$sin(x)$函数的拟合。
 
-损失定义为*MSE*，即$loss = \frac{1}{n}\sum(\hat{y} -y)^2$，其中$\hat{y}=WX$，于是忽略常数损失对$X$的导数为$gradient=(w*x-y)*x$。每次梯度的更新就是$W^{'}=W - lr*gradient$。
+损失定义为*MSE*，即：
+
+$$
+loss = \frac{1}{n}\sum(\hat{y} -y)^2
+$$
+
+其中$\hat{y}=WX$，于是忽略常数损失对$X$的导数为：
+
+$$
+gradient=(w*x-y)*x
+$$
+
+每次梯度的更新就是：
+
+$$
+W^{'}=W - lr*gradient
+$$
 
 设置超参数学习率$lr=10^{-5}$，梯度更新$10000$次。
 
