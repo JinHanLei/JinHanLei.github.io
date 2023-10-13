@@ -457,6 +457,24 @@ if __name__ == '__main__':
 
 希望读者先自行查询学习，有机会再填这个坑～
 
+## 运行
+
+最后，在命令行中进入该目录，运行：
+
+```shell
+python run.py \
+    --output_dir=./Bert_results/ \
+    --model_type=BertForCLS \
+    --model_checkpoint=./ckpts/bert-base-chinese \
+    --train_file=./data/train_set.jsonl \
+    --dev_file=./data/dev_set.jsonl \
+    --test_file=./data/test_set.jsonl \
+    --max_seq_length=512 \
+    --batch_size=8 \
+    --do_train \
+    --do_test
+```
+
 ## 小结
 
 本节我们介绍了Finetune一个BERT模型的全流程，代码和数据将会发布在[GitHub](https://github.com/JinHanLei/Transformers_tutorial)。
