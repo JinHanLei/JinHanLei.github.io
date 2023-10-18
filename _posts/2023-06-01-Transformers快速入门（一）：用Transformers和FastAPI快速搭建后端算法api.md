@@ -7,8 +7,6 @@ categories: [Deep Learning, Transformers]
 
 tags: [deep learning, transformers]
 
-comments: false
-
 description: Transformers入门，Huggingface，pipelines，FastAPI，后端算法api
 ---
 

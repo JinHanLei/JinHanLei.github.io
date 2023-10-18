@@ -7,8 +7,6 @@ categories: [Deep Learning, Transformers]
 
 tags: [deep learning, transformers, attention]
 
-comments: false
-
 description: attention机制，attention原理，Transformer原理，Transformer代码
 
 math: true

@@ -7,8 +7,6 @@ categories: [Deep Learning, Transformers]
 
 tags: [deep learning, transformers]
 
-comments: false
-
 math: true
 
 mermaid: true

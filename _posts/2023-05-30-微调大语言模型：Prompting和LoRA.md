@@ -7,8 +7,6 @@ categories: [Deep Learning, Transformers]
 
 tags: [deep learning, transformers]
 
-comments: false
-
 description: LoRA，Prompt Learning，Instruct Learning，Tuning LLM
 
 math: true

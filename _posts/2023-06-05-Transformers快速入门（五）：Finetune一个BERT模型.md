@@ -7,8 +7,6 @@ categories: [Deep Learning, Transformers]
 
 tags: [deep learning, transformers]
 
-comments: false
-
 math: true
 
 mermaid: true
@@ -140,7 +138,7 @@ class BertForCLS(BertPreTrainedModel):
 from transformers import BertForSequenceClassification
 ```
 
-以上代码即参考的`BertForSequenceClassification`。
+只不过这样的话，这个黑盒就更加黑了～
 
 ## config.py——参数
 
@@ -159,7 +157,8 @@ def parse_args():
     parser.add_argument("--train_file", default="./data/train_set.jsonl", type=str, help="The input training file.")
     parser.add_argument("--dev_file", default="./data/dev_set.jsonl", type=str, help="The input evaluation file.")
     parser.add_argument("--test_file", default="./data/test_set.jsonl", type=str, help="The input testing file.")
-
+    
+    parser.add_argument("--device", default='cuda:0' if torch.cuda.is_available() else 'cpu', type=str)
     parser.add_argument("--model_type", default="bert", type=str)
     parser.add_argument("--model_checkpoint",
                         default="./bert-base-chinese/", type=str, required=True,
@@ -404,7 +403,6 @@ if __name__ == '__main__':
     if not os.path.exists(args.output_dir):
         os.mkdir(args.output_dir)
     logger = set_logger(args)
-    args.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     seed_everything(args.seed)
     logger.info(f'Loading pretrained model and tokenizer of {args.model_type} ...')
     config = AutoConfig.from_pretrained(args.model_checkpoint)
@@ -479,4 +477,6 @@ python run.py \
 
 本节我们介绍了Finetune一个BERT模型的全流程，代码和数据将会发布在[GitHub](https://github.com/JinHanLei/Transformers_tutorial)。
 
-距离BERT论文发表已经过去5年，或许其性能早已被后来者超越，但其中蕴含的思想仍值得我们学习和继续探索。本文虽然就训练流程和模型结构进行了较为详细的呈现，但也是直接使用了`BertPreTrainedModel`作为基底模型，仍然是一个黑盒，建议同学们就BERT模型本身继续深入探索，彻底掌握其精髓。自此，这个系列更新结束。
+距离BERT论文发表已经过去5年，或许其性能早已被后来者超越，但其中蕴含的思想仍值得我们学习和继续探索。本文虽然就训练流程和模型结构进行了较为详细的呈现，但也是直接使用了`BertPreTrainedModel`作为基底模型，仍然是一个黑盒，建议同学们就BERT模型本身继续深入探索，彻底掌握其精髓。
+
+自此，这个系列更新结束。

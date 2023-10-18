@@ -7,8 +7,6 @@ categories: [Deep Learning]
 
 tags: [deep learning]
 
-comments: false
-
 mermaid: true
 
 description: Anaconda下载及安装，CUDA安装，PyTorch安装
